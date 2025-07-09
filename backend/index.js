@@ -37,7 +37,7 @@ db.query(`
   console.log('✅ Employees table ready');
 });
 
-// ✅ POST route
+// ✅ POST - create
 app.post('/employees', (req, res) => {
   const { name, email, job, salary } = req.body;
   db.query(
@@ -54,7 +54,7 @@ app.post('/employees', (req, res) => {
   );
 });
 
-// ✅ GET route
+// ✅ GET - read all
 app.get('/employees', (req, res) => {
   db.query('SELECT * FROM employees', (err, results) => {
     if (err) {
@@ -62,6 +62,47 @@ app.get('/employees', (req, res) => {
       res.status(500).send('DB error');
     } else {
       res.json(results);
+    }
+  });
+});
+
+// ✅ PUT - update by ID
+app.put('/employees/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, email, job, salary } = req.body;
+
+  db.query(
+    'UPDATE employees SET name = ?, email = ?, job = ?, salary = ? WHERE id = ?',
+    [name, email, job, salary, id],
+    (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send('Update error');
+      } else {
+        if (result.affectedRows === 0) {
+          res.status(404).send('Employee not found');
+        } else {
+          res.json({ id, name, email, job, salary });
+        }
+      }
+    }
+  );
+});
+
+// ✅ DELETE - delete by ID
+app.delete('/employees/:id', (req, res) => {
+  const { id } = req.params;
+
+  db.query('DELETE FROM employees WHERE id = ?', [id], (err, result) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Delete error');
+    } else {
+      if (result.affectedRows === 0) {
+        res.status(404).send('Employee not found');
+      } else {
+        res.sendStatus(204); // No Content
+      }
     }
   });
 });
